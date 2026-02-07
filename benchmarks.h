@@ -16,7 +16,7 @@ public:
         return sum;
     }
 
-    // 2. Rosenbrock Function [cite: 975]
+    // 2. Rosenbrock Function
     static double rosenbrock(const std::vector<double>& x) {
         double sum = 0;
         for (int i = 0; i < DIMENSIONS - 1; ++i) {
