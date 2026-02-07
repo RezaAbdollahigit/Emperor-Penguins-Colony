@@ -3,24 +3,29 @@
 #include <cstdlib>
 
 void HW_Accelerator::do_spiral_update() {
-    // Initial state
+    // Initial hardware signal state
     done_sig.write(false);
 
-    // This method is sensitive to start_sig.pos()
-    if (start_sig.read() == true) {
+    while(true) {
+        // Wait for the SW to signal the start of calculation [cite: 172]
+        wait(start_sig.pos_edge_event());
+        
+        // Computationally expensive spiral update [cite: 873, 874]
         for (int d = 0; d < DIMENSIONS; ++d) {
-            // Logarithmic spiral movement logic [cite: 141, 893]
-            // Represents movement from penguin i toward the warmer penguin best [cite: 279, 280]
-            double spiral_influence = (1.0 - Q_ij) * penguin_i_pos[d] + (Q_ij * penguin_best_pos[d]);
+            // Spiral movement from i to warmer penguin [cite: 279, 955]
+            // Models logic: (1-Q)*X_i + Q*X_best [cite: 956, 960]
+            double spiral_base = (1.0 - Q_ij) * penguin_i_pos[d] + (Q_ij * penguin_best_pos[d]);
             
-            // Generate random mutation component u ~ U(-1, 1) [cite: 967]
+            // Random mutation component u ~ U(-1, 1) [cite: 334, 967]
             double u = ((double)rand() / RAND_MAX) * 2.0 - 1.0;
             
-            // Final position update with mutation factor [cite: 330, 967]
-            updated_pos[d] = spiral_influence + (m_factor * u);
+            // Final position update including mutation [cite: 967]
+            updated_pos[d] = spiral_base + (m_factor * u);
         }
         
-        // Signal completion to the Software Controller [cite: 876]
+        // Signal SW that the calculation is finished [cite: 173]
         done_sig.write(true);
+        wait(start_sig.neg_edge_event());
+        done_sig.write(false);
     }
 }

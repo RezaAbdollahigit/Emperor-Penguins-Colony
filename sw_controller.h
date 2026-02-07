@@ -9,6 +9,8 @@ SC_MODULE(SW_Controller) {
     // Communication Ports to HW Accelerator [cite: 876]
     sc_out<bool> hw_start;
     sc_in<bool> hw_done;
+    
+    HW_Accelerator* hw_mod;
 
     struct Penguin {
         std::vector<double> position; // D-dimensional vector 
