@@ -8,13 +8,13 @@
 
 void SW_Controller::reset_population() {
     colony.clear();
-    current_mu = MU_START; [cite: 946]
-    current_m = M_START;   [cite: 967]
-    for (int i = 0; i < POPULATION_SIZE; ++i) { [cite: 400]
+    current_mu = MU_START;
+    current_m = M_START;  
+    for (int i = 0; i < POPULATION_SIZE; ++i) {
         Penguin p;
         p.position.resize(DIMENSIONS);
         for (int d = 0; d < DIMENSIONS; ++d) {
-            p.position[d] = ((double)rand() / RAND_MAX) * 20.0 - 10.0; [cite: 906, 909]
+            p.position[d] = ((double)rand() / RAND_MAX) * 20.0 - 10.0;
         }
         colony.push_back(p);
     }
@@ -22,19 +22,17 @@ void SW_Controller::reset_population() {
 
 void SW_Controller::run_simulation() {
     srand(time(NULL));
-
-    // Array of function names for display
     const char* func_names[] = {"Sphere", "Rosenbrock"};
 
     for (int f = 0; f < 2; ++f) {
-        std::cout << "\n--- Starting Optimization for: " << func_names[f] << " ---" << std::endl;
+        std::cout << "\n--- Starting EPC Optimization: " << func_names[f] << " ---" << std::endl;
         reset_population();
 
         for (int t = 0; t < MAX_ITERATIONS; ++t) {
-            // Initial fitness evaluation for the current benchmark
+            // Evaluate current fitness
             for (int i = 0; i < POPULATION_SIZE; ++i) {
-                if (f == 0) colony[i].fitness = Benchmarks::sphere(colony[i].position); [cite: 973]
-                else colony[i].fitness = Benchmarks::rosenbrock(colony[i].position); [cite: 975]
+                if (f == 0) colony[i].fitness = Benchmarks::sphere(colony[i].position);
+                else colony[i].fitness = Benchmarks::rosenbrock(colony[i].position);
             }
 
             // Identify Best
@@ -45,20 +43,20 @@ void SW_Controller::run_simulation() {
                 }
             }
 
-            // HW-Accelerated Update
+            // HW-Accelerated Spiral Update
             for (int i = 0; i < POPULATION_SIZE; ++i) {
                 if (i == best_penguin_idx) continue;
 
                 double dist_sq = 0;
                 for (int d = 0; d < DIMENSIONS; ++d) {
                     double diff = colony[best_penguin_idx].position[d] - colony[i].position[d];
-                    dist_sq += diff * diff; [cite: 952]
+                    dist_sq += diff * diff;
                 }
-                double Q = exp(-current_mu * sqrt(dist_sq)); [cite: 944]
+                double Q = exp(-current_mu * sqrt(dist_sq));
 
-                // Transfer to HW Buffers
-                hw_mod->Q_ij = Q; [cite: 301]
-                hw_mod->m_factor = current_m; [cite: 967]
+                // Feed HW Buffers
+                hw_mod->Q_ij = Q;
+                hw_mod->m_factor = current_m;
                 for (int d = 0; d < DIMENSIONS; ++d) {
                     hw_mod->penguin_i_pos[d] = colony[i].position[d];
                     hw_mod->penguin_best_pos[d] = colony[best_penguin_idx].position[d];
@@ -70,18 +68,18 @@ void SW_Controller::run_simulation() {
                 wait(SC_ZERO_TIME);
 
                 for (int d = 0; d < DIMENSIONS; ++d) {
-                    colony[i].position[d] = hw_mod->updated_pos[d]; [cite: 172]
+                    colony[i].position[d] = hw_mod->updated_pos[d];
                 }
             }
 
-            current_mu *= 0.99; [cite: 945]
-            current_m *= 0.99;  [cite: 967]
+            current_mu *= 0.99;
+            current_m *= 0.99; 
 
             if (t % 20 == 0) {
                 std::cout << func_names[f] << " Iteration " << t << " | Best Fitness: " << colony[best_penguin_idx].fitness << std::endl;
             }
         }
-        std::cout << "Final Best Fitness (" << func_names[f] << "): " << colony[best_penguin_idx].fitness << std::endl;
+        std::cout << "Final Results (" << func_names[f] << "): " << colony[best_penguin_idx].fitness << std::endl;
     }
 
     sc_stop();

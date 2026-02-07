@@ -23,7 +23,7 @@ SC_MODULE(SW_Controller) {
     double current_m;
 
     void run_simulation();
-    void reset_population(); // New helper function
+    void reset_population(); 
 
     SC_CTOR(SW_Controller) {
         SC_THREAD(run_simulation);
