@@ -5,11 +5,15 @@
 #include <vector>
 #include "config.h"
 
+// Forward Declaration to fix circular dependency
+class HW_Accelerator; 
+
 SC_MODULE(SW_Controller) {
-    // Communication Ports to HW Accelerator [cite: 876]
+    // Communication Ports to HW Accelerator 
     sc_out<bool> hw_start;
     sc_in<bool> hw_done;
     
+    // Pointer to access HW internal memory buffers directly
     HW_Accelerator* hw_mod;
 
     struct Penguin {
@@ -22,7 +26,7 @@ SC_MODULE(SW_Controller) {
     double current_mu;
     double current_m;
 
-    // The Software Thread [cite: 876]
+    // The Software Thread 
     void run_simulation();
 
     SC_CTOR(SW_Controller) {

@@ -4,21 +4,25 @@
 #include <iostream>
 #include <cmath>
 #include <cstdlib>
+#include <ctime>
 
 void SW_Controller::run_simulation() {
-    // 1. Initialize Simulation Parameters [cite: 891]
+    // 1. Initialize Simulation Parameters 
+    srand(time(NULL)); 
     current_mu = MU_START; // [cite: 946]
     current_m = M_START;   // [cite: 967]
     colony.clear();
+
+    std::cout << "SW: Initializing population of " << POPULATION_SIZE << " penguins..." << std::endl;
 
     for (int i = 0; i < POPULATION_SIZE; ++i) { // [cite: 400]
         Penguin p;
         p.position.resize(DIMENSIONS);
         for (int d = 0; d < DIMENSIONS; ++d) {
-            // Random initialization within a standard range [cite: 906, 909]
+            // Random initialization within range [-10, 10] [cite: 906, 909]
             p.position[d] = ((double)rand() / RAND_MAX) * 20.0 - 10.0;
         }
-        // Evaluate initial fitness [cite: 912, 914]
+        // Evaluate initial fitness using chosen benchmark [cite: 912, 914]
         p.fitness = Benchmarks::sphere(p.position);
         colony.push_back(p);
     }
@@ -45,7 +49,7 @@ void SW_Controller::run_simulation() {
             }
             double Q = exp(-current_mu * sqrt(dist_sq)); // [cite: 944]
 
-            // DATA TRANSFER: Software writes to Hardware Memory Buffers [cite: 876]
+            // DATA TRANSFER: Write to HW Memory Buffers 
             hw_mod->Q_ij = Q;
             hw_mod->m_factor = current_m;
             for (int d = 0; d < DIMENSIONS; ++d) {
@@ -55,19 +59,20 @@ void SW_Controller::run_simulation() {
 
             // TRIGGER HARDWARE [cite: 934]
             hw_start.write(true);
-            wait(hw_done.posedge_event()); // Wait for HW to finish math [cite: 172]
+            wait(hw_done.posedge_event()); // Wait for HW result [cite: 172]
             hw_start.write(false);
+            wait(SC_ZERO_TIME); // Synchronization delta cycle
 
-            // DATA RETRIEVAL: Software reads results back from Hardware [cite: 876]
+            // DATA RETRIEVAL: Read results from Hardware 
             for (int d = 0; d < DIMENSIONS; ++d) {
                 colony[i].position[d] = hw_mod->updated_pos[d];
             }
 
-            // Re-evaluate fitness for the new position [cite: 935]
+            // Re-evaluate fitness [cite: 935]
             colony[i].fitness = Benchmarks::sphere(colony[i].position);
         }
 
-        // 4. Update Dynamic Parameters [cite: 895, 896]
+        // 4. Update Dynamic Parameters (Damping) [cite: 895, 896]
         current_mu *= 0.99; // [cite: 945]
         current_m *= 0.99;  // [cite: 967]
 
