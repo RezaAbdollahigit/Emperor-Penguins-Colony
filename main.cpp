@@ -1,25 +1,31 @@
 #include <systemc.h>
 #include "sw_controller.h"
 #include "hw_accelerator.h"
+#include <iostream>
 
 int sc_main(int argc, char* argv[]) {
-    // Signals for communication [cite: 876]
-    sc_signal<bool> start_sig;
-    sc_signal<bool> done_sig;
+    // 1. Define Communication Signals (The "Bus") [cite: 874, 876]
+    sc_signal<bool> sig_start;
+    sc_signal<bool> sig_done;
 
-    // Instantiate Modules
-    SW_Controller sw_mod("Software_Controller");
-    HW_Accelerator hw_mod("Hardware_Accelerator");
+    // 2. Instantiate the HW/SW Modules [cite: 841, 876]
+    SW_Controller software_unit("Software_Unit");
+    HW_Accelerator hardware_accelerator("Hardware_Accelerator");
 
-    // Connect Ports
-    sw_mod.hw_start(start_sig);
-    sw_mod.hw_done(done_sig);
-    hw_mod.start_sig(start_sig);
-    hw_mod.done_sig(done_sig);
+    // 3. Connect Ports to Signals 
+    software_unit.hw_start(sig_start);
+    software_unit.hw_done(sig_done);
 
-    // Run Simulation
-    std::cout << "Starting Emperor Penguins Colony Simulation..." << std::endl;
-    sc_start();
+    hardware_accelerator.start_sig(sig_start);
+    hardware_accelerator.done_sig(sig_done);
+
+    // 4. Start Simulation [cite: 871]
+    std::cout << "--- EPC Optimization Simulation Started ---" << std::endl;
+    std::cout << "Dimensions: " << DIMENSIONS << " | Population: " << POPULATION_SIZE << std::endl;
+    
+    sc_start(); // Triggers the SC_THREAD in sw_controller [cite: 871]
+
+    std::cout << "--- Simulation Finished ---" << std::endl;
 
     return 0;
 }
