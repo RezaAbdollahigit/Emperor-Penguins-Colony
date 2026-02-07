@@ -1,0 +1,19 @@
+# Executable files
+epc_sim
+sim_q*
+epc_simulation
+
+# Object files and libraries
+*.o
+*.obj
+*.a
+*.lib
+*.so
+
+# System and OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.swp
+*~
