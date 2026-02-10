@@ -86,5 +86,3 @@ This generates an `epc_convergence_plot.png` comparing the algorithm's performan
 * **`SW_Controller`**: Manages the population, identifies the "Effective" penguin, and coordinates data transfer.
 * **`HW_Accelerator`**: A low-level module that performs the D-dimensional spiral updates and random mutations.
 * **`Benchmarks`**: Contains the mathematical definitions for the optimization targets.
-
-Would you like me to help you generate a ZIP file command to package all these files for your final submission?
