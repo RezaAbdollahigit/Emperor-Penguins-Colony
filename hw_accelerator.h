@@ -23,7 +23,7 @@ SC_MODULE(HW_Accelerator) {
     void do_spiral_update();
 
     SC_CTOR(HW_Accelerator) {
-        // Changed to SC_THREAD to support wait() for synchronization 
+        // SC_THREAD to support wait() for synchronization 
         SC_THREAD(do_spiral_update);
         // Sensitivity list to monitor the software trigger
         sensitive << start_sig; 

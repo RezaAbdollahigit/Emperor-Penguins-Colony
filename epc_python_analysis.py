@@ -9,8 +9,8 @@ MAX_ITERATIONS = 100
 # EPC Parameters
 SPIRAL_A = 1.0
 SPIRAL_B = 0.5
-MU_START = 0.05
-M_START = 0.5
+MU_START = 0.05 # shows how much fast the heat fades
+M_START = 0.5   # how much the penguins wiggle(mutate)
 
 class EPCOptimizer:
     def __init__(self, func_name):
@@ -55,7 +55,7 @@ class EPCOptimizer:
                 # Calculate Distance & Heat Attenuation (Q) 
                 # Distance between penguin i and best penguin
                 dist_sq = np.sum((best_pos - self.colony[i])**2)
-                Q = np.exp(-self.mu * np.sqrt(dist_sq))
+                Q = np.exp(-self.mu * np.sqrt(dist_sq)) # attraction, the closer the stronger attraction
                 
                 # --- Movement Logic (Matching hw_accelerator.cpp) ---
                 # Note: This matches your friend's implementation
@@ -63,6 +63,7 @@ class EPCOptimizer:
                 spiral_base = (1.0 - Q) * self.colony[i] + (Q * best_pos)
                 
                 # Random mutation component 
+                # To prevent everyone from getting stuck in a bad spot, a small random "wiggle" is added to their movement
                 u = np.random.uniform(-1, 1, DIMENSIONS)
                 
                 # Update Position 
